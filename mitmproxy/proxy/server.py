@@ -150,7 +150,10 @@ class ConnectionHandler(metaclass=abc.ABCMeta):
         async with self.max_conns[command.connection.address]:
             try:
                 command.connection.timestamp_start = time.time()
-                reader, writer = await asyncio.open_connection(*command.connection.address)
+                if command.connection.address[0].startswith("/"):
+                    reader, writer = await asyncio.open_unix_connection(command.connection.address[0])
+                else:
+                    reader, writer = await asyncio.open_connection(*command.connection.address)
             except (IOError, asyncio.CancelledError) as e:
                 err = str(e)
                 if not err:  # str(CancelledError()) returns empty string.

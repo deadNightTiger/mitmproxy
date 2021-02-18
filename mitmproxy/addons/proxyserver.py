@@ -106,11 +106,17 @@ class Proxyserver:
             if ctx.options.server:
                 if not ctx.master.addons.get("nextlayer"):
                     ctx.log.warn("Warning: Running proxyserver without nextlayer addon!")
-                self.server = await asyncio.start_server(
-                    self.handle_connection,
-                    self.options.listen_host,
-                    self.options.listen_port,
-                )
+                if self.options.listen_host.startswith("/"):
+                    self.server = await asyncio.start_unix_server(
+                        self.handle_connection,
+                        self.options.listen_host,
+                    )
+                else:
+                    self.server = await asyncio.start_server(
+                        self.handle_connection,
+                        self.options.listen_host,
+                        self.options.listen_port,
+                    )
                 addrs = {f"http://{human.format_address(s.getsockname())}" for s in self.server.sockets}
                 ctx.log.info(f"Proxy server listening at {' and '.join(addrs)}")
 

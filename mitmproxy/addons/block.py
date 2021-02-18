@@ -21,6 +21,9 @@ class Block:
         )
 
     def client_connected(self, client):
+        if isinstance(client.sockname, str) and client.sockname.startswith("/"):
+            return # unix socket
+
         parts = client.peername[0].rsplit("%", 1)
         address = ipaddress.ip_address(parts[0])
         if isinstance(address, ipaddress.IPv6Address):

@@ -76,13 +76,15 @@ def format_timestamp_with_milli(s):
 
 
 @functools.lru_cache()
-def format_address(address: typing.Optional[tuple]) -> str:
+def format_address(address: typing.Optional[typing.Union[tuple, str]]) -> str:
     """
     This function accepts IPv4/IPv6 tuples and
     returns the formatted address string with port number
     """
     if address is None:
         return "<no address>"
+    if isinstance(address, str):
+        return address
     try:
         host = ipaddress.ip_address(address[0])
         if host.is_unspecified:

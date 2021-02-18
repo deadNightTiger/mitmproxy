@@ -16,10 +16,15 @@ class ServerSpec(NamedTuple):
 server_spec_re = re.compile(
     r"""
         ^
-        (?:(?P<scheme>\w+)://)?  # scheme is optional
-        (?P<host>[^:/]+|\[.+\])  # hostname can be DNS name, IPv4, or IPv6 address.
-        (?::(?P<port>\d+))?  #  port is optional
-        /?  #  we allow a trailing backslash, but no path
+        (?:
+            (?:(?P<scheme>\w+)://)?  # scheme is optional
+            (?P<host>[^:/]+|\[.+\])  # hostname can be DNS name, IPv4, or IPv6 address.
+            (?::(?P<port>\d+))?  #  port is optional
+            /?  #  we allow a trailing backslash, but no path
+            |
+            (?:unix:)?
+            (?P<unix_path>/.*)
+        )
         $
         """,
     re.VERBOSE
@@ -41,6 +46,9 @@ def parse(server_spec: str) -> ServerSpec:
     m = server_spec_re.match(server_spec)
     if not m:
         raise ValueError(f"Invalid server specification: {server_spec}")
+
+    if m.group("unix_path"):
+        return ServerSpec("http", (m.group("unix_path"), 0))
 
     if m.group("scheme"):
         scheme = m.group("scheme")
